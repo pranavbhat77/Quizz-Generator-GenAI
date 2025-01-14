@@ -11,6 +11,7 @@ An interactive CLI quiz application powered by Google's Gemini AI that generates
 - Timed questions (30-second limit per question)
 - Score tracking with points system
 - Automatic cleanup of temporary files
+- PDF upload option for question generation
 
 ## Prerequisites
 
@@ -24,6 +25,8 @@ import (
     "github.com/fatih/color"          // Terminal color output
     "github.com/google/generative-ai-go/genai"  // Gemini AI client
     "google.golang.org/api/option"    // Google API options
+    "github.com/pdfcpu/pdfcpu/pkg/api" // PDF text extraction
+    "github.com/pdfcpu/pdfcpu/pkg/pdfcpu" // PDF text extraction
 )
 ```
 
@@ -41,6 +44,8 @@ go mod init quizgenerator
 go get github.com/fatih/color
 go get github.com/google/generative-ai-go/genai
 go get google.golang.org/api/option
+go get github.com/pdfcpu/pdfcpu/pkg/api
+go get github.com/pdfcpu/pdfcpu/pkg/pdfcpu
 ```
 
 3. Set up your Google Cloud API key:
@@ -52,12 +57,13 @@ export GOOGLE_API_KEY="your-api-key-here"
 
 1. Run the application:
 ```bash
-go run main.go
+go run cmd/quizgenerator/main.go
 ```
 
 2. Follow the prompts:
    - Enter your name
    - Choose a quiz topic
+   - Optionally upload a PDF for question generation
    - Answer generated questions within the time limit
 
 ## Scoring System
@@ -76,9 +82,18 @@ go run main.go
 
 ```
 quizgenerator-genai/
-├── main.go                # Main application code
-├── quiz_data.json         # Temporary storage for quiz questions
-└── README.md             # Project documentation
+├── cmd/
+│   └── quizgenerator/
+│       └── main.go                # Main application code
+├── pkg/
+│   ├── quiz/
+│   │   └── quiz.go                # Quiz-related functions
+│   ├── user/
+│   │   └── user.go                # User-related functions
+│   └── utils/
+│       └── utils.go               # Utility functions
+├── quiz_data.json                 # Temporary storage for quiz questions
+└── README.md                      # Project documentation
 ```
 
 ## Golang Implementation Details
@@ -132,9 +147,12 @@ type UserScore struct {
 ## Functions
 
 - `generateQuestions()`: Creates quiz questions using Gemini AI
+- `generateQuestionsFromText()`: Creates quiz questions from extracted PDF text
 - `conductQuiz()`: Manages quiz flow and user interaction
 - `handleAnswer()`: Processes user answers and updates score
 - `saveQuestionsToJSON()`: Handles temporary data storage
+- `extractTextFromPDF()`: Extracts text from a PDF file
+- `removeJSONFile()`: Removes the temporary JSON file
 
 ## Error Handling
 
